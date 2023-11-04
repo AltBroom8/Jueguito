@@ -371,7 +371,7 @@ function rebote1Arriba(bolaAzul, posX, posY,player2) {
     var p2Ancho = player2D.width;
     var p2Alto = player2D.height;
 
-    var bolaD = elemento.getBoundingClientRect();
+    var bolaD = bolaAzul.getBoundingClientRect();
     var bolaAncho = bolaD.width;
     var bolaAlto = bolaD.height;
     
@@ -428,7 +428,7 @@ function rebote1Arriba(bolaAzul, posX, posY,player2) {
                 subiendo = true;
             }
              else {
-                fadeOutBola(bolaAzul)
+                fadeOutBola(bolaAzul);
                 clearInterval(interval); // Detén el intervalo cuando se alcanza el límite inferior
                 bolaAzul.remove();
             }
@@ -439,13 +439,13 @@ function rebote1Arriba(bolaAzul, posX, posY,player2) {
     colision = false; // Reiniciar el manejo de colisiones
 }
 
-function rebote1Abajo(bolaAzul, ejeX, ejeY) {
-    console.log('x=' + ejeX + ' ejeY=' + ejeY);
+function rebote1Abajo(bolaAzul, posX, posY,player2) {
+
     var player2D = player2.getBoundingClientRect();
     var p2Ancho = player2D.width;
     var p2Alto = player2D.height;
 
-    var bolaD = elemento.getBoundingClientRect();
+    var bolaD = bolaAzul.getBoundingClientRect();
     var bolaAncho = bolaD.width;
     var bolaAlto = bolaD.height;
 
@@ -456,32 +456,6 @@ function rebote1Abajo(bolaAzul, ejeX, ejeY) {
         var rect2 = player2.getBoundingClientRect();
         var p2X = rect2.left;
         var p2Y = rect2.top;
-        if (bajando) {
-            if (ejeY < 640 && ejeX < 1120) {
-                ejeX += 5;
-                ejeY += 5;
-                bolaAzul.style.left = ejeX + 'px';
-                bolaAzul.style.top = ejeY + 'px';
-                bolaAzul.style.transition = 'transform 0.3s linear';
-            } else {
-                bajando = false; // Cambia la bandera cuando alcanza el límite superior
-            }
-        } else {
-            if (ejeX < 1120 && ejeY > 132) {
-                ejeX += 5;
-                ejeY -= 5;
-                bolaAzul.style.left = ejeX + 'px';
-                bolaAzul.style.top = ejeY + 'px';
-                bolaAzul.style.transition = 'transform 0.3s linear';
-            } else if (ejeY <= 132 && ejeX < 1120) {
-                bajando = true;
-            } else {
-                // Detén el intervalo cuando se alcanza el límite inferior
-                clearInterval(interval);
-                bolaAzul.remove();
-            }
-        }
-        // Verificar la colisión en cada iteración del intervalo
         if (
             posX < p2X + p2Ancho &&
             posX + bolaAncho > p2X &&
@@ -490,33 +464,57 @@ function rebote1Abajo(bolaAzul, ejeX, ejeY) {
         ) {
             colision = true;
             console.log('BANDERA BANDERITAAAA');
-            // Realiza acciones de colisión aquí
-            handleCollision(bolaAzul, interval);
         }
+        if (colision) {
+            setTimeout(function () {
+                fadeOutBola(bolaAzul);
+            }, 1000); // Ajusta el tiempo para sincronizar con la transición de opacidad
+
+            contador2--;
+            quitaVida();
+
+            if(contador2 === 0){
+                window.location.href = "./fin_partida.html";
+                var video = document.getElementById('mivideo'); 
+                video.play();
+            }
+
+            vida2.innerText = contador2;
+            console.group('checkpoint');
+            clearInterval(interval); // Detener el intervalo cuando haya una colisión
+            bolaAzul.remove();
+        }
+        if (bajando) {
+            if (posY < 640 && posX < 1120) {
+                posX += 5;
+                posY += 5;
+                bolaAzul.style.left = posX + 'px';
+                bolaAzul.style.top = posY + 'px';
+                bolaAzul.style.transition = 'transform 0.3s linear';
+            } else {
+                bajando = false; // Cambia la bandera cuando alcanza el límite superior
+            }
+        } else {
+            if (posX < 1120 && posY > 132) {
+                posX += 5;
+                posY -= 5;
+                bolaAzul.style.left = posX + 'px';
+                bolaAzul.style.top = posY + 'px';
+                bolaAzul.style.transition = 'transform 0.3s linear';
+            } else if (posY <= 132 && posX < 1120) {
+                bajando = true;
+            } else {
+                fadeOutBola(bolaAzul);
+                // Detén el intervalo cuando se alcanza el límite inferior
+                clearInterval(interval);
+                bolaAzul.remove();
+            }
+        }
+        // Verificar la colisión en cada iteración del intervalo
+        
     }, 10); // Ajusta el retraso según sea necesario
     desaparece = false; // Reiniciar el manejo de colisiones
     colision = false; // Reiniciar el manejo de colisiones
-}
-
-// Función para manejar la colisión
-function handleCollision(bolaAzul, interval) {
-    setTimeout(function () {
-        fadeOutBola(bolaAzul);
-    }, 1000); // Ajusta el tiempo para sincronizar con la transición de opacidad
-
-    contador2--;
-    quitaVida();
-
-    if (contador2 === 0) {
-        window.location.href = './fin_partida.html';
-        var video = document.getElementById('mivideo');
-        video.play();
-    }
-
-    vida2.innerText = contador2;
-    console.group('checkpoint');
-    clearInterval(interval); // Detener el intervalo cuando haya una colisión
-    bolaAzul.remove();
 }
 
 

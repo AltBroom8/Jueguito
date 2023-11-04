@@ -286,3 +286,40 @@ li:hover span {
     transition: opacity 0.3s linear; /* Añade esta línea para controlar la transición de opacidad */
 }
 
+/*CONTROL DE MOVIMIENTO*/
+
+@keyframes moveUp {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(var(--translateY, 0));
+    }
+}
+
+@keyframes moveDown {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(var(--translateY, 0));
+    }
+}
+
+@keyframes moveRight {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(var(--translateX, 0));
+    }
+}
+
+@keyframes moveLeft {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(var(--translateX, 0));
+    }
+}
