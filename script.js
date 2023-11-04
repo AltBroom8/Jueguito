@@ -7,6 +7,8 @@ var player2Y = 0;
 var player1;
 var player2;
 
+
+
 var contador2;
 var vida2;
 
@@ -23,12 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
-
-
-
-
-    var empieza = false;
     var listaItems = document.getElementsByTagName('li');
     var teclasPresionadasJugador1 = {};
     var teclasPresionadasJugador2 = {};
@@ -51,11 +47,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         teclasPresionadasJugador1[event.key] = true;
                         //player1 controles
                         if((teclasPresionadasJugador1['s'] && teclasPresionadasJugador1['d'] && teclasPresionadasJugador1['c']) || (teclasPresionadasJugador1['s'] && teclasPresionadasJugador1['c'])){
-                            disparo1Rebote(player1, false);
+                            disparo1Rebote(player1, false,player2);
                         }else if ((teclasPresionadasJugador1['w'] && teclasPresionadasJugador1['c'] && teclasPresionadasJugador1['d']) || (teclasPresionadasJugador1['w'] && teclasPresionadasJugador1['c'])) {
-                            disparo1Rebote(player1, true);
+                            disparo1Rebote(player1, true,player2);
                         } else if ((teclasPresionadasJugador1['d'] && teclasPresionadasJugador1['c']) || (teclasPresionadasJugador1['a'] && teclasPresionadasJugador1['c'])) {
+                            soloUna = false;
                             disparo1simple(player1,player2);
+                            soloUna = false;
                             console.log('ha presionado la tecla c junto con d o a');
                         }else if(teclasPresionadasJugador1['w'] && teclasPresionadasJugador1['d']) {
                             // Mover diagonalmente hacia arriba a la derecha
@@ -88,8 +86,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             console.log('ha presionado la tecla c')
                         }
                          
-                        
-                        
                         
                     });
                     document.addEventListener('keydown', function(event) {
@@ -157,7 +153,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
         })(i);
     }
-
     
 
 
@@ -170,6 +165,9 @@ document.addEventListener('DOMContentLoaded', function() {
             elemento.style.transition = 'transform 0.3s linear';
         }
         console.log(posY);
+        
+
+
         return posY;
     }
 
@@ -194,6 +192,8 @@ document.addEventListener('DOMContentLoaded', function() {
             elemento.style.transform = 'translateX('+posX+'px) translateY('+posY+'px)';
             elemento.style.transition = 'transform 0.3s linear';
         }
+
+
         
         console.log(posX);
         return posX;
@@ -210,6 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         console.log(posX);
+
         return posX;
     }
 
@@ -253,62 +254,82 @@ function disparo1simple(player1,player2){
         bolaAzul.style.zIndex = '1';
         var posXFinal = 1120; // Define la posición final en el eje X
         var distancia = posXFinal - ejeX;
-        d1LineaRecta(bolaAzul, ejeX,ejeY, distancia,player2);
+        var rect2 = player2.getBoundingClientRect();
+        var p2X = rect2.left;
+        var p2Y = rect2.top;
+        d1LineaRecta(bolaAzul, ejeX,ejeY, distancia,player2,p2X,p2Y);
+        colision = false;
+        desaparece = false;
     }
 }
 
-function d1LineaRecta(elemento, posX, posY, distancia, player2) {
-    console.log('posx es ' + posX);
-    console.log('distancia es ' + distancia);
-    var rect2 = player2.getBoundingClientRect();
-    var p2X = rect2.left;
-    var p2Y = rect2.top;
+function d1LineaRecta(elemento, posX, posY, distancia, player2, p2X, p2Y) {
+    
+    var player2D = player2.getBoundingClientRect();
+    var p2Ancho = player2D.width;
+    var p2Alto = player2D.height;
 
-    if ((posX >= p2X - 27 && posX <= p2X + 30) && (posY >= p2Y - 20 && posY <= p2Y + 47) && !desaparece) {
-        console.log('entra en la colision');
-        colision = true;
-        desaparece = true;
-    }
+    var bolaD = elemento.getBoundingClientRect();
+    var bolaAncho = bolaD.width;
+    var bolaAlto = bolaD.height;
 
-    if (distancia > 0) {
-        distancia -= 5;
-        posX += 5;
-        elemento.style.left = posX + 'px';
-        elemento.style.transition = 'transform 0.3s linear';
 
-        if (distancia <= 1200 || colision) {
-            setTimeout(function () {
+    var colision = false;
+    var desaparece = false;
+    var soloUna = false;
+
+    
+    var interval = setInterval(function () {
+        rect = player2.getBoundingClientRect();
+        p2X = rect.left;
+        p2Y = rect.top;
+        console.log('p2x es'+p2X+'y p2y es '+p2Y);
+        console.log('player2x es'+player2X+ ' player2y es '+player2Y);
+        if (
+            posX < p2X + p2Ancho &&
+            posX + bolaAncho > p2X &&
+            posY < p2Y + p2Alto &&
+            posY + bolaAlto > p2Y
+        ) {
+            console.log('entra en la colision');
+            colision = true;
+            desaparece = true;
+            console.log('colision + ' + colision + ' desaparece ' + desaparece + 'solouna ' + soloUna);
+        }
+        if (distancia > 0) {
+            distancia -= 5;
+            posX += 5;
+            elemento.style.left = posX + 'px';
+            elemento.style.transition = 'transform 0.3s linear';
+
+            if (distancia <= 12 || colision) {
                 fadeOutBola(elemento);
-            }, distancia * 10); // Ajusta el tiempo para sincronizar con la transición de opacidad
+                elemento.remove();
+                clearInterval(interval);
+            } else {
+                console.log(posX);
+            }
         }
 
-        console.log(posX);
-        setTimeout(function () {
-            d1LineaRecta(elemento, posX, posY, distancia, player2);
-        }, 10);
-    }
-    if(distancia<=20){
-        elemento.remove();
-    }else if(colision&&desaparece&&!soloUna){
-        elemento.remove();
-    }
-    if ((distancia <= 0 || colision)&& desaparece && !soloUna) {
-        quitaVida();
-        contador2--;
-        if(contador2 == 0){
-            window.location.href = "./fin_partida.html";
-            var video = document.getElementById('mivideo'); 
-            video.play();
+        if ((distancia <= 0 || colision) && desaparece && !soloUna) {
+            quitaVida();
+            contador2--;
+            if (contador2 === 0) {
+                window.location.href = './fin_partida.html';
+                var video = document.getElementById('mivideo');
+                video.play();
+            }
+            vida2.innerText = contador2;
+            console.group('checkpoint');
+            soloUna = true;
+            clearInterval(interval);
         }
-        vida2.innerText = contador2;
-        console.group('checkpoint');
-        soloUna = true;
-        colision = false; // Reiniciar el manejo de colisiones
-    }
-    desaparece = false; // Reiniciar el manejo de colisiones
-    
-    
+    }, 10);
 }
+
+
+
+
 
 function fadeOutBola(elemento) {
     console.log('entra en el metodo');
@@ -320,7 +341,7 @@ function fadeOutBola(elemento) {
     });
 }
 
-function disparo1Rebote(player1,arriba){
+function disparo1Rebote(player1,arriba,player2){
     existingElement = document.querySelector('.bolaAzulSimple');
     if (!existingElement){
         console.log('has entrado en el metodo disparo rebote')
@@ -335,7 +356,7 @@ function disparo1Rebote(player1,arriba){
             bolaAzul.style.top = ejeY + 'px';
             bolaAzul.style.zIndex = '1';
         if(arriba){
-            rebote1Arriba(bolaAzul,ejeX,ejeY);
+            rebote1Arriba(bolaAzul,ejeX,ejeY,player2);
 
         }else{
         rebote1Abajo(bolaAzul,ejeX,ejeY);
@@ -344,34 +365,36 @@ function disparo1Rebote(player1,arriba){
 
 }
 
-function rebote1Arriba(bolaAzul, ejeX, ejeY) {
-    console.log('x=' + ejeX + ' ejeY=' + ejeY);
-    console.log(player2);
+function rebote1Arriba(bolaAzul, posX, posY,player2) {
+    console.log('x=' + posX + ' ejeY=' + posY);
+    console.log(player2.offsetWidth);
     var rect2 = player2.getBoundingClientRect();
     var p2X = rect2.left;
     var p2Y = rect2.top;
+
+
     
 
     var subiendo = true; // Bandera para indicar si el objeto está subiendo o bajando
     var interval = setInterval(function () {
         if (subiendo) {
-            if (ejeY > 132 && ejeX < 1120) {
-                ejeX += 5;
-                ejeY -= 5;
-                bolaAzul.style.left = ejeX + 'px';
-                bolaAzul.style.top = ejeY + 'px';
+            if (posY > 132 && posX < 1120) {
+                posX += 5;
+                posY -= 5;
+                bolaAzul.style.left = posX + 'px';
+                bolaAzul.style.top = posY + 'px';
                 bolaAzul.style.transition = 'transform 0.3s linear';
             } else {
                 subiendo = false; // Cambia la bandera cuando alcanza el límite superior
             }
         } else {
-            if (ejeX < 1120 && ejeY<640) {
-                ejeX += 5;
-                ejeY += 5;
-                bolaAzul.style.left = ejeX + 'px';
-                bolaAzul.style.top = ejeY + 'px';
+            if (posX < 1120 && posY<640) {
+                posX += 5;
+                posY += 5;
+                bolaAzul.style.left = posX + 'px';
+                bolaAzul.style.top = posY + 'px';
                 bolaAzul.style.transition = 'transform 0.3s linear';
-            }else if(ejeY>=640 && ejeX < 1120){
+            }else if(posY>=640 && posX < 1120){
                 subiendo = true;
             }
              else {
@@ -380,8 +403,10 @@ function rebote1Arriba(bolaAzul, ejeX, ejeY) {
                 bolaAzul.remove();
             }
         }
-        console.log('p2x es '+p2X+ 'p2y es '+p2Y+ 'ejex es '+ejeX+ 'ejey es '+ejeY);
-        if((ejeX >= p2X - 27 && ejeX <= p2X + 54) && (ejeY >= p2Y - 20 && ejeY <= p2Y + 54)){
+        if((posX < p2X + player2.offsetWidth &&
+            posX + bolaAzul.offsetWidth > p2X &&
+            posY < p2Y + player2.offsetHeight &&
+            posY + bolaAzul.offsetHeight > p2Y && !desaparece) ){
             colision = true;
             console.log('BANDERA BANDERITAAAA');
         }
@@ -443,9 +468,9 @@ function rebote1Abajo(bolaAzul, ejeX, ejeY) {
         }
         // Verificar la colisión en cada iteración del intervalo
         if (
-            ejeX >= p2X - 20 &&
+            ejeX >= p2X - 27 &&
             ejeX <= p2X + 55 &&
-            ejeY >= p2Y - 20 &&
+            ejeY >= p2Y - 27 &&
             ejeY <= p2Y + 54
         ) {
             colision = true;
@@ -515,3 +540,4 @@ function quitaVida(){
     i--;
 
 }
+
